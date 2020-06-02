@@ -5,9 +5,15 @@ var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
 let cleanCSS = require('gulp-clean-css');
 var autoprefixer = require('gulp-autoprefixer');
+const postcss = require('gulp-postcss');
 var browserSync = require('browser-sync').create();
 const notifier = require('node-notifier');
 
+class TailwindExtractor {
+  static extract(content) {
+    return content.match(/[A-Za-z0-9-_:\/]+/g) || [];
+  }
+}
 
 gulp.task('dev', ['sass:development', 'watch:development', 'browser-sync']);
 gulp.task('default', ['dev']);
@@ -38,6 +44,10 @@ gulp.task('sass:development', function () {
     .pipe(sourcemaps.init())
     .pipe(sass())
     .on('error', swallowError)
+    .pipe(postcss([
+      require('tailwindcss'),
+      require('autoprefixer'),
+    ]))
     .pipe(concat('main.css'))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('web/static'))
@@ -68,6 +78,10 @@ gulp.task('sass:production', function () {
   ])
     .pipe(sass())
     .on('error', swallowError)
+    .pipe(postcss([
+      require('tailwindcss'),
+      require('autoprefixer'),
+    ]))
     .pipe(concat('main.min.css'))
     .pipe(autoprefixer())
     .pipe(cleanCSS())
